@@ -1,5 +1,5 @@
 // Builds the static pages: wraps each src/<page>.html body with the shared head, top bar and footer.
-// Run `npm run build` after editing anything in src/. Output is committed, so Vercel needs no build step.
+// Run `npm run pages` after editing anything in src/. Output is committed, so Vercel needs no build step.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
 const pages = [
