@@ -1,30 +1,43 @@
-// Site self-check: run with `node check.mjs` (also `npm test`).
+// Site self-check: `npm test` (builds first). Fails loudly on broken links, missing files or wrong facts.
 import { readFileSync, existsSync } from "node:fs";
 import assert from "node:assert/strict";
 
-const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
+const pages = { "/": "index.html", "/products/": "products/index.html", "/services/": "services/index.html", "/work/": "work/index.html", "/pricing/": "pricing/index.html" };
+const read = (f) => readFileSync(new URL(`./${f}`, import.meta.url), "utf8");
+const html = Object.fromEntries(Object.entries(pages).map(([u, f]) => [u, read(f)]));
+const ids = (h) => new Set([...h.matchAll(/id="([^"]+)"/g)].map((m) => m[1]));
 
-// Every in-page link points to a section that exists.
-const ids = new Set([...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1]));
-for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.has(id), `missing section #${id}`);
+for (const [url, h] of Object.entries(html)) {
+  // In-page anchors exist on the same page.
+  for (const [, id] of h.matchAll(/href="#([^"]+)"/g)) assert.ok(ids(h).has(id), `${url}: missing #${id}`);
+  // Links to other pages (and their anchors) exist.
+  for (const [, path, hash] of h.matchAll(/href="(\/[a-z]*\/?)(?:#([^"]+))?"/g)) {
+    assert.ok(pages[path], `${url}: link to unknown page ${path}`);
+    if (hash) assert.ok(ids(html[path]).has(hash), `${url}: ${path}#${hash} missing`);
+  }
+  // Local files exist.
+  for (const [, file] of h.matchAll(/(?:src|href)="\/([^"#?]+\.[a-z]+)"/g)) assert.ok(existsSync(new URL(`./${file}`, import.meta.url)), `${url}: missing /${file}`);
+  // Real contact address only, and the shared top bar is present.
+  assert.ok(h.includes("mailto:info@meraung.com"), `${url}: contact email missing`);
+  assert.ok(!h.includes("hello@meraung.com"), `${url}: wrong email`);
+  assert.ok(h.includes('class="announce"') && h.includes('aria-label="Mobile"'), `${url}: top bar missing`);
+}
 
-// Every local file referenced exists.
-for (const [, path] of html.matchAll(/(?:src|href)="\/([^"#?]+)"/g)) assert.ok(existsSync(new URL(`./${path}`, import.meta.url)), `missing file /${path}`);
+// Products page: every product has a section, a price table and a status label.
+const products = html["/products/"];
+for (const id of ["pos", "bizpos", "mykiosk", "moto", "skola", "affilixhq", "resto-pos", "landing", "custom"]) {
+  const start = products.indexOf(`<article id="${id}"`);
+  assert.ok(start > 0, `product #${id} missing`);
+  const block = products.slice(start, products.indexOf("</article>", start));
+  assert.ok(block.includes('class="ptable"'), `#${id}: no price table`);
+  assert.ok(/badge (ready|build)/.test(block), `#${id}: no ready/built label`);
+}
 
-// Contact uses the real address only.
-assert.ok(html.includes("mailto:info@meraung.com"), "contact email missing");
-assert.ok(!/hello@meraung\.com/.test(html), "wrong contact email");
+// Prices match the source apps (spot checks).
+const pricing = html["/pricing/"];
+for (const p of ["RM79", "RM149", "RM249", "RM99", "RM199", "RM349", "RM169", "RM269", "RM12,999", "RM19.90", "RM39.90", "RM79.90", "RM29", "RM59", "RM790", "RM1,500", "RM2,900", "RM8,000", "RM15,000", "RM25,000"]) {
+  assert.ok(pricing.includes(p), `pricing: ${p} missing`);
+}
+assert.ok(!/RM1,500<\/b> one-time|From RM1,500/.test(html["/"]), "landing page must start from RM790");
 
-// All four Meraung products are listed and linked.
-for (const p of ["pos", "moto", "skola", "landing-page"]) assert.ok(html.includes(`https://meraung.com/${p}"`), `product link /${p} missing`);
-
-// The six live apps from GitHub are listed in the Apps section.
-const apps = html.slice(html.indexOf('id="apps"'), html.indexOf('id="services"'));
-const appLinks = ["bizpos.my", "affilixhq.com", "mykiosk.meraung.com", "nearo-web-appmeraung-3317s-projects.vercel.app", "isuketravelandtours.com", "tujuan-ten.vercel.app"];
-for (const u of appLinks) assert.ok(apps.includes(`href="https://${u}"`), `app ${u} missing`);
-assert.equal((apps.match(/class="app fx"/g) || []).length, appLinks.length, "unexpected app count");
-
-// The top bar has real navigation, on desktop and mobile.
-assert.ok((html.match(/<nav /g) || []).length >= 2, "desktop or mobile nav missing");
-
-console.log("ok: links, files, email, 4 products, 6 apps, nav");
+console.log(`ok: ${Object.keys(pages).length} pages, links, files, email, products, prices`);
