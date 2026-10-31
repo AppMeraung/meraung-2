@@ -44,4 +44,14 @@ for (const p of ["RM99", "RM199", "RM349", "RM1,069", "RM169", "RM269", "RM12,99
 }
 assert.ok(!/From RM1,500 one-time/.test(html["/"]), "landing page must start from RM790");
 
+// The owner dashboard shell exists, is not indexed and does not contain credentials.
+const commandCenter = read("command-center/index.html");
+const vercel = JSON.parse(read("vercel.json"));
+assert.ok(commandCenter.includes('name="robots" content="noindex, nofollow, noarchive"'), "command center must be noindex");
+assert.ok(commandCenter.includes("/api/auth/session") === false, "API behavior belongs in external JS");
+assert.ok(existsSync(new URL("./command-center/app.js", import.meta.url)), "command center app missing");
+assert.ok(existsSync(new URL("./api/command-center.mjs", import.meta.url)), "command center API missing");
+assert.ok(!/MERAUNG_SESSION_SECRET\s*=\s*[^\s#]/.test(commandCenter), "secret leaked into dashboard HTML");
+assert.ok(vercel.headers.some((rule) => rule.source.startsWith("/command-center/") && rule.headers.some((header) => header.key === "Content-Security-Policy")), "command center security headers missing");
+
 console.log(`ok: ${Object.keys(pages).length} pages, ${products.length} products, links, pop-ups, prices`);

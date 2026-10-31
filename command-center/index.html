@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="theme-color" content="#081a3a" />
+  <title>Command Center — Meraung Studio</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/command-center/dashboard.css" />
+</head>
+<body>
+  <main>
+    <section id="loading" class="gate" aria-live="polite">
+      <p class="brand"><img src="/brand/meraung-navy.png" alt="" /> Meraung <span>Owner</span></p>
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Checking secure session…</p>
+    </section>
+
+    <section id="login" class="gate" hidden>
+      <div class="login-card">
+        <p class="brand"><img src="/brand/meraung-navy.png" alt="" /> Meraung <span>Owner</span></p>
+        <p class="eyebrow">Private workspace</p>
+        <h1>One view for every SaaS.</h1>
+        <p class="intro">Vendor subscriptions and customer payment activity, kept as two separate financial views.</p>
+        <form id="login-form">
+          <label>Email<input name="email" type="email" autocomplete="username" required /></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" required /></label>
+          <button type="submit">Enter Command Center <span>→</span></button>
+          <p id="login-error" class="form-error" role="alert"></p>
+        </form>
+        <p class="security-note">Protected by a server-verified, HttpOnly session. Credentials never enter the page source.</p>
+      </div>
+    </section>
+
+    <section id="dashboard" hidden>
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Back to Meraung Studio"><img src="/brand/meraung-navy.png" alt="" /> Meraung <span>Command Center</span></a>
+        <div class="top-actions"><span id="owner-email"></span><button id="logout" class="quiet">Sign out</button></div>
+      </header>
+
+      <div class="shell">
+        <aside>
+          <p class="side-label">Workspace</p>
+          <a class="active" href="#overview"><span>01</span> Subscriptions</a>
+          <a href="#customer-payments"><span>02</span> Customer payments</a>
+          <a href="#projects"><span>03</span> SaaS portfolio</a>
+          <div class="side-foot"><span class="pulse"></span><span><b id="connection-count">0 / 0</b> data sources<br />connected</span></div>
+        </aside>
+
+        <div class="content">
+          <section id="overview" class="page-head">
+            <div><p class="eyebrow">Super Admin · owner daily view</p><h1>Morning, Meraung.</h1><p>Subscription income and in-app customer payments, without mixing the two.</p></div>
+            <div class="ranges" role="group" aria-label="Date range">
+              <button data-range="7d">7 days</button><button data-range="30d" class="on">30 days</button><button data-range="90d">90 days</button><button data-range="ytd">YTD</button>
+            </div>
+          </section>
+
+          <div id="data-banner" class="data-banner" role="status"></div>
+
+          <section class="kpis" aria-label="Vendor subscription metrics">
+            <article><div class="metric-top"><span>Net subscription receipts</span><i>SAAS NET</i></div><strong id="net-revenue">—</strong><p>Meraung receipts from vendor subscriptions</p></article>
+            <article><div class="metric-top"><span>New vendors</span><i>VENDORS</i></div><strong id="new-vendors">—</strong><p>Businesses added, not customer accounts</p></article>
+            <article><div class="metric-top"><span>Monthly recurring revenue</span><i>MRR</i></div><strong id="mrr">—</strong><p>Subscription run-rate, separate from revenue</p></article>
+            <article><div class="metric-top"><span>Active subscriptions</span><i>ACTIVE</i></div><strong id="active-subscriptions">—</strong><p>Vendor subscriptions currently active</p></article>
+          </section>
+
+          <section class="revenue-strip" aria-label="Subscription receipts breakdown">
+            <div><span>Gross subscription receipts</span><strong id="gross-revenue">—</strong></div>
+            <div class="minus"><span>Subscription refunds</span><strong id="refunds">—</strong></div>
+            <div><span>Net subscription receipts</span><strong id="net-revenue-small">—</strong></div>
+            <p>MRR is a run-rate and is not added to period receipts.</p>
+          </section>
+
+          <section id="customer-payments" class="payments-section">
+            <div class="section-head"><div><p class="eyebrow">Customer payments inside apps</p><h2>Payment volume</h2></div><p class="not-revenue">Customer → vendor · not Meraung revenue</p></div>
+            <div class="stream-banner">This section tracks customer checkout activity processed inside each app. It is deliberately excluded from SaaS subscription income.</div>
+            <div class="payment-kpis">
+              <article><span>Gross payment volume</span><strong id="payment-gross">—</strong></article>
+              <article><span>Refunds</span><strong id="payment-refunds">—</strong></article>
+              <article><span>Net payment volume</span><strong id="payment-net">—</strong></article>
+              <article><span>Transactions</span><strong id="payment-transactions">—</strong></article>
+            </div>
+            <div class="state-grid" aria-label="Customer payment states">
+              <div><span class="state-dot success"></span><span>Succeeded</span><strong id="payments-succeeded">—</strong></div>
+              <div><span class="state-dot pending"></span><span>Pending</span><strong id="payments-pending">—</strong></div>
+              <div><span class="state-dot failed"></span><span>Failed</span><strong id="payments-failed">—</strong></div>
+              <div><span class="state-dot refunded"></span><span>Refunded</span><strong id="payments-refunded">—</strong></div>
+            </div>
+          </section>
+
+          <section id="projects" class="projects-section">
+            <div class="section-head"><div><p class="eyebrow">SaaS portfolio</p><h2>Project performance</h2></div><p id="updated-at">Updated —</p></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Project</th><th>Connection</th><th>SaaS net</th><th>MRR</th><th>New vendors</th><th>Active subs</th><th>Customer payment net</th><th>Succeeded</th><th>Pending</th><th></th></tr></thead>
+                <tbody id="project-rows"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="/command-center/app.js" defer></script>
+</body>
+</html>
